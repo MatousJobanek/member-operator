@@ -26,7 +26,7 @@ ifneq ("$(wildcard ../api/$(PATH_TO_CD_GENERATE_FILE))","")
 	../api/${PATH_TO_CD_GENERATE_FILE} ${CD_GENERATE_PARAMS}
 else
 	@echo "generating manifests for CD using script from GH api repo (using latest version in master)..."
-	curl -sSL https://raw.githubusercontent.com/codeready-toolchain/api/master/${PATH_TO_CD_GENERATE_FILE} | bash -s -- ${CD_GENERATE_PARAMS}
+	curl -sSL https://raw.githubusercontent.com/matousjobanek/api/master/${PATH_TO_CD_GENERATE_FILE} | bash -s -- ${CD_GENERATE_PARAMS}
 endif
 
 .PHONY: push-manifests-as-app
@@ -38,7 +38,7 @@ ifneq ("$(wildcard ../api/$(PATH_TO_PUSH_APP_FILE))","")
 	../api/${PATH_TO_PUSH_APP_FILE} ${PUSH_APP_PARAMS}
 else
 	@echo "pushing to quay in nightly channel using script from GH api repo (using latest version in master)..."
-	curl -sSL https://raw.githubusercontent.com/codeready-toolchain/api/master/${PATH_TO_PUSH_APP_FILE} | bash -s -- ${PUSH_APP_PARAMS}
+	curl -sSL https://raw.githubusercontent.com/matousjobanek/api/master/${PATH_TO_PUSH_APP_FILE} | bash -s -- ${PUSH_APP_PARAMS}
 endif
 
 .PHONY: push-bundle-and-index-image
@@ -50,7 +50,7 @@ ifneq ("$(wildcard ../api/$(PATH_TO_BUNDLE_FILE))","")
 	../api/${PATH_TO_BUNDLE_FILE} ${PUSH_BUNDLE_PARAMS}
 else
 	@echo "pushing to quay in staging channel using script from GH api repo (using latest version in master)..."
-	curl -sSL https://raw.githubusercontent.com/codeready-toolchain/api/master/${PATH_TO_BUNDLE_FILE} | bash -s -- ${PUSH_BUNDLE_PARAMS}
+	curl -sSL https://raw.githubusercontent.com/matousjobanek/api/master/${PATH_TO_BUNDLE_FILE} | bash -s -- ${PUSH_BUNDLE_PARAMS}
 endif
 
 .PHONY: recover-operator-dir
@@ -62,7 +62,7 @@ ifneq ("$(wildcard ../api/$(PATH_TO_RECOVERY_FILE))","")
 	../api/${PATH_TO_RECOVERY_FILE} ${RECOVERY_PARAMS}
 else
 	@echo "recovering the operator directory from the backup folder script from GH api repo (using latest version in master)..."
-	curl -sSL https://raw.githubusercontent.com/codeready-toolchain/api/master/${PATH_TO_RECOVERY_FILE} | bash -s -- ${RECOVERY_PARAMS}
+	curl -sSL https://raw.githubusercontent.com/matousjobanek/api/master/${PATH_TO_RECOVERY_FILE} | bash -s -- ${RECOVERY_PARAMS}
 endif
 
 
@@ -75,5 +75,5 @@ ifneq ("$(wildcard ../api/$(PATH_TO_OLM_GENERATE_FILE))","")
 	../api/${PATH_TO_OLM_GENERATE_FILE} ${GENERATE_PARAMS}
 else
 	@echo "generating OLM files using script from GH api repo (using latest version in master)..."
-	curl -sSL https://raw.githubusercontent.com/codeready-toolchain/api/master/${PATH_TO_OLM_GENERATE_FILE} | bash -s -- ${GENERATE_PARAMS}
+	curl -sSL https://raw.githubusercontent.com/matousjobanek/api/master/${PATH_TO_OLM_GENERATE_FILE} | bash -s -- ${GENERATE_PARAMS}
 endif
