@@ -11,6 +11,12 @@ docker-image: build
 	$(Q)docker build -f build/Dockerfile -t ${IMAGE} .
 	$(Q)docker build -f build/Dockerfile.webhook -t ${WEBHOOK_IMAGE} .
 
+.PHONY: podman-image
+## Build the docker image locally that can be deployed (only contains bare operator)
+podman-image: build
+	$(Q)podman build -f build/Dockerfile -t ${IMAGE} .
+	$(Q)podman build -f build/Dockerfile.webhook -t ${WEBHOOK_IMAGE} .
+
 .PHONY: docker-push
 ## Push the docker image to quay.io registry
 docker-push: docker-image
@@ -21,6 +27,17 @@ ifeq ($(QUAY_NAMESPACE),${GO_PACKAGE_ORG_NAME})
 endif
 	$(Q)docker push ${IMAGE}
 	$(Q)docker push ${WEBHOOK_IMAGE}
+
+.PHONY: podman-push
+## Push the docker image to quay.io registry
+podman-push: podman-image
+ifeq ($(QUAY_NAMESPACE),${GO_PACKAGE_ORG_NAME})
+	@echo "#################################################### WARNING ####################################################"
+	@echo you are going to push to $(QUAY_NAMESPACE) namespace, make sure you have set QUAY_NAMESPACE variable appropriately
+	@echo "#################################################################################################################"
+endif
+	$(Q)podman push ${IMAGE}
+	$(Q)podman push ${WEBHOOK_IMAGE}
 
 .PHONY: docker-push-to-local
 ## Push the docker image to the local docker.io registry

@@ -4,6 +4,7 @@ PATH_TO_PUSH_APP_FILE=scripts/push-manifests-as-app.sh
 PATH_TO_BUNDLE_FILE=scripts/push-bundle-and-index-image.sh
 PATH_TO_RECOVERY_FILE=scripts/recover-operator-dir.sh
 PATH_TO_OLM_GENERATE_FILE=scripts/olm-catalog-generate.sh
+PATH_TO_PREPARE_BUNDLE_FILE=scripts/prepare-bundle-manifests.sh
 
 TMP_DIR?=/tmp
 IMAGE_BUILDER?=docker
@@ -44,7 +45,10 @@ endif
 .PHONY: push-bundle-and-index-image
 ## Pushes generated manifests as a bundle image to quay and adds is to the image index
 push-bundle-and-index-image:
-	$(eval PUSH_BUNDLE_PARAMS = -pr ../member-operator/ -qn ${QUAY_NAMESPACE} -ch staging -td ${TMP_DIR} -ib ${IMAGE_BUILDER} -im ${INDEX_IMAGE})
+ifneq (${BUILDER_ARGS},)
+	$(eval BUILDER_ARGS_PARAM = -ba ${BUILDER_ARGS})
+endif
+	$(eval PUSH_BUNDLE_PARAMS = -pr ../member-operator/ -qn ${QUAY_NAMESPACE} -ch staging -td ${TMP_DIR} -ib ${IMAGE_BUILDER} -im ${INDEX_IMAGE} ${BUILDER_ARGS_PARAM})
 ifneq ("$(wildcard ../api/$(PATH_TO_BUNDLE_FILE))","")
 	@echo "pushing to quay in staging channel using script from local api repo..."
 	../api/${PATH_TO_BUNDLE_FILE} ${PUSH_BUNDLE_PARAMS}
