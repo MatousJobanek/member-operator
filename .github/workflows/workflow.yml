@@ -5,10 +5,15 @@ on:
       - master
     tags-ignore:
       - '*.*'
+env:
+  GOPATH: /tmp/go
+  OPM_VERSION: v1.12.5
+  OPERATOR_SDK_VERSION: v0.19.2
+  GO_VERSION: 1.14.x
 
 jobs:
   binary:
-    name: Build & push a new version of operator binary
+    name: Build & push a new operator release
 
     runs-on: ubuntu-latest
 
@@ -16,7 +21,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.14.x
+        go-version: ${{ env.GO_VERSION }}
 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -29,10 +34,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Build & push
-      env:
-        GOPATH: /tmp/go
+    - name: Install Podman
       run: |
+        set -ex
         sudo apt-get update \
           && sudo apt-get remove buildah podman -y \
           && sudo apt-get autoremove -y \
@@ -40,6 +44,9 @@ jobs:
           && sudo apt-get -y install podman dbus-x11 \
           && podman version
 
+    - name: Build & push
+      run: |
+        set -e
         mkdir -p  ~/.docker || true
         echo "{
                       \"auths\": {
@@ -49,7 +56,6 @@ jobs:
                       }
               }"> ~/.docker/config.json
 
-        cat ~/.docker/config.json
         podman login quay.io  --authfile=~/.docker/config.json
 
         make podman-push QUAY_NAMESPACE=matousjobanek
@@ -59,53 +65,6 @@ jobs:
       id: short-sha
       with:
         length: 7
-
-#    - name: Build the operator image
-#      id: build-image
-#      uses: redhat-actions/buildah-build@v2
-#      with:
-##        image: quay.io/${{ github.repository }}
-#        image: ${{ github.event.repository.name }}
-#        tags: ${{ steps.short-sha.outputs.sha }}
-#        dockerfiles: |
-#          ./build/Dockerfile
-#
-#
-#    - name: Build the webhook image
-#      id: build-image-webhook
-#      uses: redhat-actions/buildah-build@v2
-#      with:
-#        #        image: quay.io/${{ github.repository }}
-#        image: ${{ github.event.repository.name }}-webhook
-#        tags: ${{ steps.short-sha.outputs.sha }}
-#        dockerfiles: |
-#          ./build/Dockerfile.webhook
-#
-#    - name: Push To Quay
-#      id: push-to-quay
-#      uses: redhat-actions/push-to-registry@v2
-#      with:
-#        image: ${{ steps.build-image.outputs.image }}
-#        tags: ${{ steps.build-image.outputs.tags }}
-##        registry: quay.io/${{ github.repository }}
-#        registry: quay.io/matousjobanek/
-#        username: ${{ secrets.QUAY_USERNAME }}
-#        password: ${{ secrets.QUAY_TOKEN }}
-#
-#    - name: Push To Quay webhook
-#      id: push-to-quay-webhook
-#      uses: redhat-actions/push-to-registry@v2
-#      with:
-#        image: ${{ steps.build-image-webhook.outputs.image }}
-#        tags: ${{ steps.build-image-webhook.outputs.tags }}
-#        #        registry: quay.io/${{ github.repository }}
-#        registry: quay.io/matousjobanek/
-#        username: ${{ secrets.QUAY_USERNAME }}
-#        password: ${{ secrets.QUAY_TOKEN }}
-
-#    - name: Use the image
-#      run: echo "New image has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
-
 
   bundle:
     name: Build & push a new version of operator bundle and update index image
@@ -119,41 +78,39 @@ jobs:
       with:
         fetch-depth: 0
 
-#    - name: Build & push operator bundle and update index image
-#      uses: matousjobanek/toolchain-cicd@2255cae65f1c68d15ba04c5fd9cdba41fd6b7ac3
-#      with:
-#        quay-namespace: matousjobanek
-#        quay-token: ${{ secrets.QUAY_TOKEN }}
-#        repo-name: ${{ github.event.repository.name }}
-
     - uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: generate manifests
-      env:
-        OPM_VERSION: v1.12.5
-        OPERATOR_SDK_VERSION: v0.19.2
+    - name: install operator-sdk, yq and opm
       run: |
         set -ex
+        echo ${OPERATOR_SDK_VERSION}
+        env
+
         # download, verify and install operator-sdk
         curl -L -s https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu -o operator-sdk \
           && curl -L -s https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu.asc -o operator-sdk.asc \
           && gpg --keyserver keyserver.ubuntu.com --recv-key 9AF46519 \
           && gpg --verify operator-sdk.asc \
           && chmod +x operator-sdk \
-          && sudo cp operator-sdk /usr/bin/operator-sdk \
+          && sudo cp operator-sdk /bin/operator-sdk \
           && rm operator-sdk \
           && operator-sdk version
 
         pip3 install yq
 
-        make generate-cd-release-manifests QUAY_NAMESPACE=matousjobanek
-
         curl -Lo opm https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
         chmod +x opm \
           && sudo cp opm /bin/opm \
           && rm opm
+
+        ls /bin/
+
+    - name: generate manifests
+      run: |
+        set -ex
+        ls /bin/
 
         echo "{
                       \"auths\": {
@@ -165,4 +122,8 @@ jobs:
 
         podman login quay.io  --authfile=~/.docker/config.json
 
+        make generate-cd-release-manifests QUAY_NAMESPACE=matousjobanek
+
         make push-bundle-and-index-image QUAY_NAMESPACE=matousjobanek IMAGE_BUILDER=podman
+#        BUILDER_ARGS=--authfile=${HOME}/.docker/config.json
+

@@ -7,7 +7,6 @@ PATH_TO_OLM_GENERATE_FILE=scripts/olm-catalog-generate.sh
 PATH_TO_PREPARE_BUNDLE_FILE=scripts/prepare-bundle-manifests.sh
 
 TMP_DIR?=/tmp
-IMAGE_BUILDER?=docker
 INDEX_IMAGE?=hosted-toolchain-index
 
 .PHONY: push-to-quay-nightly

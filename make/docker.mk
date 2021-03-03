@@ -4,21 +4,22 @@ IMAGE_TAG ?= ${GIT_COMMIT_ID_SHORT}
 IMAGE ?= ${TARGET_REGISTRY}/${QUAY_NAMESPACE}/${GO_PACKAGE_REPO_NAME}:${IMAGE_TAG}
 QUAY_USERNAME ?= ${QUAY_NAMESPACE}
 WEBHOOK_IMAGE ?= ${TARGET_REGISTRY}/${QUAY_NAMESPACE}/${GO_PACKAGE_REPO_NAME}-webhook:${IMAGE_TAG}
+IMAGE_BUILDER ?= docker
 
 .PHONY: docker-image
-## Build the docker image locally that can be deployed (only contains bare operator)
+## Build the binary image locally that can be deployed (only contains bare operator)
 docker-image: build
 	$(Q)docker build -f build/Dockerfile -t ${IMAGE} .
 	$(Q)docker build -f build/Dockerfile.webhook -t ${WEBHOOK_IMAGE} .
 
 .PHONY: podman-image
-## Build the docker image locally that can be deployed (only contains bare operator)
+## Build the binary image locally that can be deployed (only contains bare operator)
 podman-image: build
 	$(Q)podman build -f build/Dockerfile -t ${IMAGE} .
 	$(Q)podman build -f build/Dockerfile.webhook -t ${WEBHOOK_IMAGE} .
 
 .PHONY: docker-push
-## Push the docker image to quay.io registry
+## Push the binary image to quay.io registry
 docker-push: docker-image
 ifeq ($(QUAY_NAMESPACE),${GO_PACKAGE_ORG_NAME})
 	@echo "#################################################### WARNING ####################################################"
@@ -29,7 +30,7 @@ endif
 	$(Q)docker push ${WEBHOOK_IMAGE}
 
 .PHONY: podman-push
-## Push the docker image to quay.io registry
+## Push the binary image to quay.io registry
 podman-push: podman-image
 ifeq ($(QUAY_NAMESPACE),${GO_PACKAGE_ORG_NAME})
 	@echo "#################################################### WARNING ####################################################"
@@ -40,7 +41,7 @@ endif
 	$(Q)podman push ${WEBHOOK_IMAGE}
 
 .PHONY: docker-push-to-local
-## Push the docker image to the local docker.io registry
+## Push the binary image to the local docker.io registry
 docker-push-to-local: set-local-registry docker-image docker-push
 
 .PHONY: set-local-registry
@@ -49,7 +50,7 @@ set-local-registry:
 	$(eval TARGET_REGISTRY:=docker.io)
 
 .PHONY: docker-push-to-os
-## Push the docker image to the OS internal registry
+## Push the binary image to the OS internal registry
 docker-push-to-os: set-os-registry docker-image docker-push
 
 .PHONY: set-os-registry
