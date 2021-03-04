@@ -8,6 +8,7 @@ PATH_TO_PREPARE_BUNDLE_FILE=scripts/prepare-bundle-manifests.sh
 
 TMP_DIR?=/tmp
 INDEX_IMAGE?=hosted-toolchain-index
+IMAGE_BUILDER ?= docker
 
 .PHONY: push-to-quay-nightly
 ## Creates a new version of CSV and pushes it to quay

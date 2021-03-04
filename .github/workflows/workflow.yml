@@ -7,8 +7,8 @@ on:
       - '*.*'
 env:
   GOPATH: /tmp/go
-  OPM_VERSION: v1.12.5
-  OPERATOR_SDK_VERSION: v0.19.2
+#  OPM_VERSION: v1.12.5
+#  OPERATOR_SDK_VERSION: v0.19.2
   GO_VERSION: 1.14.x
 
 jobs:
@@ -43,101 +43,8 @@ jobs:
     - name: Prepare tools
       uses: matousjobanek/toolchain-cicd/prepare-tools-action@master
 
-    - name: Prepare tools
+    - name: Release operator
       uses: matousjobanek/toolchain-cicd/release-operator-action@master
       with:
         quay-token: ${{ secrets.QUAY_TOKEN }}
         quay-namespace: matousjobanek
-
-#
-#    - name: Install Podman
-#      run: |
-#        set -ex
-#        sudo apt-get update \
-#          && sudo apt-get remove buildah podman -y \
-#          && sudo apt-get autoremove -y \
-#          && sudo apt-get upgrade \
-#          && sudo apt-get -y install podman dbus-x11 \
-#          && podman version
-#
-#    - name: Build & push
-#      run: |
-#        set -e
-#        mkdir -p  ~/.docker || true
-#        echo "{
-#                      \"auths\": {
-#                              \"quay.io\": {
-#                                      \"auth\": \"${{ secrets.QUAY_TOKEN }}\"
-#                              }
-#                      }
-#              }"> ~/.docker/config.json
-#
-#        podman login quay.io  --authfile=~/.docker/config.json
-#
-#        make podman-push QUAY_NAMESPACE=matousjobanek
-#
-#    - name: Short sha
-#      uses: benjlevesque/short-sha@v1.2
-#      id: short-sha
-#      with:
-#        length: 7
-#
-#  bundle:
-#    name: Build & push a new version of operator bundle and update index image
-#
-#    runs-on: ubuntu-latest
-#    needs: binary
-#
-#    steps:
-#    - name: Checkout code
-#      uses: actions/checkout@v2
-#      with:
-#        fetch-depth: 0
-#
-
-#
-#    - name: install operator-sdk, yq and opm
-#      run: |
-#        set -ex
-#        echo ${OPERATOR_SDK_VERSION}
-#        env
-#
-#        # download, verify and install operator-sdk
-#        curl -L -s https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu -o operator-sdk \
-#          && curl -L -s https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu.asc -o operator-sdk.asc \
-#          && gpg --keyserver keyserver.ubuntu.com --recv-key 9AF46519 \
-#          && gpg --verify operator-sdk.asc \
-#          && chmod +x operator-sdk \
-#          && sudo cp operator-sdk /bin/operator-sdk \
-#          && rm operator-sdk \
-#          && operator-sdk version
-#
-#        pip3 install yq
-#
-#        curl -Lo opm https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
-#        chmod +x opm \
-#          && sudo cp opm /bin/opm \
-#          && rm opm
-#
-#        ls /bin/
-#
-#    - name: generate manifests
-#      run: |
-#        set -ex
-#        ls /bin/
-#
-#        echo "{
-#                      \"auths\": {
-#                              \"quay.io\": {
-#                                      \"auth\": \"${{ secrets.QUAY_TOKEN }}\"
-#                              }
-#                      }
-#              }"> ~/.docker/config.json
-#
-#        podman login quay.io  --authfile=~/.docker/config.json
-#
-#        make generate-cd-release-manifests QUAY_NAMESPACE=matousjobanek
-#
-#        make push-bundle-and-index-image QUAY_NAMESPACE=matousjobanek IMAGE_BUILDER=podman
-##        BUILDER_ARGS=--authfile=${HOME}/.docker/config.json
-

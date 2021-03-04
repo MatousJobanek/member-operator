@@ -4,7 +4,6 @@ IMAGE_TAG ?= ${GIT_COMMIT_ID_SHORT}
 IMAGE ?= ${TARGET_REGISTRY}/${QUAY_NAMESPACE}/${GO_PACKAGE_REPO_NAME}:${IMAGE_TAG}
 QUAY_USERNAME ?= ${QUAY_NAMESPACE}
 WEBHOOK_IMAGE ?= ${TARGET_REGISTRY}/${QUAY_NAMESPACE}/${GO_PACKAGE_REPO_NAME}-webhook:${IMAGE_TAG}
-IMAGE_BUILDER ?= docker
 
 .PHONY: docker-image
 ## Build the binary image locally that can be deployed (only contains bare operator)
