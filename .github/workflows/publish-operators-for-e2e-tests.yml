@@ -13,12 +13,29 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-    - name: Checkout code
+    - name: Checkout code from PR event
       uses: actions/checkout@v2
+      if: ${{ github.event.comment == '' }}
       with:
         ref: ${{github.event.pull_request.head.ref}}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 0
+
+    - name: Github API Request
+      id: request
+      uses: octokit/request-action@v2.0.0
+      if: ${{ github.event.pull_request == '' }}
+      with:
+        route: ${{ github.event.issue.pull_request.url }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Checkout PR Branch
+      uses: actions/checkout@v2
+      if: ${{ github.event.pull_request == '' }}
+      with:
+        repository: ${{ fromJson(steps.request.outputs.data).head.repo.full_name }}
+        ref: ${{ steps.pr_data.outputs.branch }}
 
     - name: Install Go
       uses: actions/setup-go@v2
