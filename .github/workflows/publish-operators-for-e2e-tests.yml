@@ -13,35 +13,8 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-    - name: Checkout code from PR event
-      uses: actions/checkout@v2
-      if: ${{ github.event.comment == '' }}
-      with:
-        ref: ${{github.event.pull_request.head.ref}}
-        repository: ${{github.event.pull_request.head.repo.full_name}}
-        fetch-depth: 0
-
-    - name: Github API Request
-      id: request
-      uses: octokit/request-action@v2.0.0
-      if: ${{ github.event.pull_request == '' }}
-      with:
-        route: ${{ github.event.issue.pull_request.url }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Get PR informations
-      id: pr_data
-      run: |
-        echo "::set-output name=json::${{ steps.request.outputs.data }}"
-
-    - name: Checkout PR Branch
-      uses: actions/checkout@v2
-      if: ${{ github.event.pull_request == '' }}
-      with:
-        repository: ${{ fromJson(steps.request.outputs.data).head.repo.full_name }}
-        ref: ${{ fromJson(steps.request.outputs.data).head.ref }}
-        fetch-depth: 0
+    - name: Prepare tools
+      uses: codeready-toolchain/matousjobanek/checkout-code@master
 
     - name: Install Go
       uses: actions/setup-go@v2
