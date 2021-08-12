@@ -67,7 +67,7 @@ jobs:
       uses: codeready-toolchain/toolchain-cicd/prepare-tools-action@master
 
     - name: Publish current operator bundles for host & member
-      uses: codeready-toolchain/toolchain-cicd/publish-operators-for-e2e-tests@master
+      uses: matousjobanek/toolchain-cicd/publish-operators-for-e2e-tests@master
       with:
         quay-token: ${{ secrets.TEST_QUAY_TOKEN }}
         quay-namespace: codeready-toolchain-test
